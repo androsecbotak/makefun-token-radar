@@ -358,6 +358,24 @@
     );
   }
 
+  // The reading guide, from the model's own words: one collapsible entry per factor, the
+  // first open so a reader meets the idea at once. It sits under the board, never above it,
+  // so the ranking stays the first thing the page shows.
+  function guidePanel() {
+    var guide = DATA.guide || [];
+    if (guide.length === 0) return null;
+    return el('section', { class: 'panel guide' },
+      el('h2', { text: 'Reading the radar' }),
+      el('p', { class: 'sub', text: 'The board is one function of the snapshot figures. This is how each part of it is meant to be read, and what it cannot tell you.' }),
+      el('div', { class: 'guide-items' }, guide.map(function (g, i) {
+        return el('details', { class: 'guide-item', open: i === 0 ? 'open' : null },
+          el('summary', null, el('h3', { text: g.title })),
+          el('p', { text: g.body })
+        );
+      }))
+    );
+  }
+
   var dialog = el('dialog', { class: 'detail', id: 'detail', 'aria-labelledby': 'detail-title' });
   dialog.addEventListener('close', function () { state.selected = null; writeHash(); });
 
@@ -417,6 +435,7 @@
     shell.appendChild(controls());
     shell.appendChild(state.tab === 'pre-token' ? boardTable() : liveTable());
     if (state.tab === 'pre-token') shell.appendChild(modelPanel());
+    if (state.tab === 'pre-token') { var guideSection = guidePanel(); if (guideSection) shell.appendChild(guideSection); }
     app.appendChild(shell);
     app.setAttribute('aria-busy', 'false');
     if (!dialog.isConnected) app.appendChild(dialog);

@@ -23,6 +23,40 @@
 //
 // The constants are the radar-2 model's, stated in the dashboard and changeable in the model sandbox.
 // No protocol name is ever special-cased: the same function scores every row.
+//
+// Why the model takes this shape.
+//
+// Locked value is the anchor because it is the one figure every protocol reports the same
+// way, and a protocol that already holds billions is the one whose token, if it ever
+// arrives, starts from real usage rather than from a promise. A quarter of TVL is the
+// base: it treats the token as worth a slice of the value already locked, not the whole
+// of it, so a protocol with a thin market does not outrank a deep one on one good week.
+//
+// Seven-day growth is clamped because a fresh listing can print a triple-digit week that
+// says more about the listing than about the protocol; the clamp keeps a spike from
+// deciding the board. Past fifty percent the momentum kicker adds half a point of credit
+// per extra point, because a run that keeps going after a strong week is a different
+// signal from a single good week.
+//
+// Maturity rises with age because a protocol that has run for years with no token has had
+// years to earn one, and the longer it runs the closer the launch tends to be. Past three
+// years the credit tapers instead of growing, because a protocol that has waited that long
+// has shown it can wait longer, and the board should not keep paying it for patience
+// alone. A protocol whose listing date is missing is given one year, the middle of the
+// range, so it is neither punished nor rewarded for a gap in the record.
+//
+// Category matters because a token's job differs by what the protocol does: a curator
+// that already manages other people's money has a clearer path to a token than a bridge
+// that mostly moves value between chains. The factors are small on purpose, a nudge of
+// five to fifteen percent, so no category can carry a row on its own.
+//
+// Chain breadth is capped at four extra chains because a protocol on two chains is
+// genuinely harder to ignore than one on a single chain, but a protocol on twenty chains
+// is not twenty times the opportunity; the cap keeps the factor honest.
+//
+// The farm plan is derived the same way, from the row's own figures: its category picks
+// the first move, its chains pick the weekly touch, its TVL picks the capital tier, and
+// its age picks how long to hold. Nothing in the plan is written for one protocol alone.
 
 /** The snapshot's protocol entry: exactly the ten fields the sealed input carries. */
 export interface SnapshotProtocol {
@@ -198,12 +232,76 @@ export interface LiveRow {
 }
 
 /** Everything the dashboard needs: the board, the live set, and the model it runs. */
+/** One entry of the reading guide the dashboard shows under the board. */
+export interface GuideEntry {
+  title: string;
+  body: string;
+}
+
+/** The reading guide, in the model's own words: what each factor means and what the board cannot say. */
+export const MODEL_GUIDE: GuideEntry[] = [
+  {
+    title: 'Start from locked value',
+    body: `The implied value starts from the value already locked in the protocol, a quarter of its
+TVL. A protocol holding billions is scored from real usage, not from a promise, and the
+quarter keeps a thin market from outranking a deep one on a single good week.`,
+  },
+  {
+    title: 'A good week is not a trend',
+    body: `Seven-day growth is clamped between minus sixty and plus one hundred twenty percent, so a
+fresh listing cannot win the board on one spike. Past fifty percent the momentum kicker adds
+half a point of credit per extra point, because a run that keeps going after a strong week
+is a different signal from a single good week.`,
+  },
+  {
+    title: 'Age earns credit, then stops',
+    body: `Maturity starts at six tenths and rises to one over three years, because a protocol that
+has run for years with no token has had years to earn one. Past three years the credit
+tapers instead of growing, because a protocol that has waited that long has shown it can
+wait longer. A missing listing date is given one year, the middle of the range.`,
+  },
+  {
+    title: 'What the protocol does matters a little',
+    body: `The category factor is a nudge of five to fifteen percent, never a verdict on its own.
+Curators and yield managers sit at the top because they already hold other people's money
+and have the clearest path to a token; bridges and chains sit at the bottom because they
+mostly move value that already exists somewhere else.`,
+  },
+  {
+    title: 'More chains, up to a point',
+    body: `Each extra chain adds five percent, capped at four extra chains. A protocol on two chains
+is genuinely harder to ignore than one on a single chain, but a protocol on twenty chains
+is not twenty times the opportunity, and the cap keeps the factor honest.`,
+  },
+  {
+    title: 'How to read a row',
+    body: `Rank is the order of the implied value, highest first. Open a row to see the five factors
+multiplied together and the page recomputing the same number the board carries, so a stale
+row shows itself. The farm plan under it is six steps with a cost and a time on each.`,
+  },
+  {
+    title: 'The farm plan is a plan, not a promise',
+    body: `Every step is derived from the row's own figures: its category picks the first move, its
+chains pick the weekly touch, its TVL picks the capital tier, and its age picks how long
+to hold. Costs are the cheapest honest way in, and the last step is always to write down
+what happened, because a farm with no log is a farm you cannot repeat.`,
+  },
+  {
+    title: 'What the radar cannot see',
+    body: `The snapshot is one day, 14 November 2026, and the board cannot know what launched after
+it. "Records no token" means the record carries no token, not that the protocol has none.
+An implied value is an estimate of what a token could be worth, never a price, and a TVL
+that can rise in a week can fall in one too.`,
+  },
+];
+
 export interface RadarData {
   as_of: string;
   source: string;
   floor_usd: number;
   model: ModelConstants;
   model_version: string;
+  guide: GuideEntry[];
   watchlist_size: number;
   board_size: number;
   early_size: number;
@@ -536,6 +634,7 @@ export function buildRadar(snapshot: Snapshot, model: ModelConstants = MODEL): {
     floor_usd: snapshot.floor_usd,
     model,
     model_version: MODEL_VERSION,
+    guide: MODEL_GUIDE,
     watchlist_size: snapshot.watchlist.length,
     board_size: board.length,
     early_size: early,

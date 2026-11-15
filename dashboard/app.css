@@ -125,6 +125,27 @@ tbody tr[data-selected="true"] { background: rgba(53, 224, 138, 0.09); }
 .factor-table div { display: flex; justify-content: space-between; gap: var(--step-3); border-bottom: 1px dashed var(--border); padding-bottom: 2px; }
 .factor-table span { color: var(--muted); }
 .factor-table b { font-family: var(--font-num); font-weight: 500; }
+
+/* Reading the radar: the guide under the board. One entry per factor, folded shut except
+   the first, so the section reads as a short index until the reader opens what they want. */
+.guide { margin-top: var(--step-4); padding: var(--step-5); display: grid; gap: var(--step-3); }
+.guide h2 { font-size: 18px; margin-bottom: 0; }
+.guide > .sub { max-width: 72ch; margin-top: 0; }
+.guide-items { display: grid; gap: 0; }
+.guide-item { border-top: 1px solid var(--border); padding: var(--step-3) 0; }
+.guide-item:first-child { border-top: 0; padding-top: 0; }
+.guide-item summary { cursor: pointer; list-style: none; }
+.guide-item summary::-webkit-details-marker { display: none; }
+.guide-item summary::marker { content: ''; }
+.guide-item summary h3 { display: inline; font-size: 15px; font-weight: 600; }
+.guide-item summary h3::after { content: ' +'; color: var(--accent); font-weight: 500; }
+.guide-item[open] summary h3::after { content: ' \2013'; }
+.guide-item summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+.guide-item p { color: var(--muted); max-width: 72ch; margin-top: var(--step-2); white-space: pre-line; line-height: 1.7; }
+@media (max-width: 900px) {
+  .guide { padding: var(--step-4); }
+  .guide-item p { max-width: none; }
+}
 .empty { padding: var(--step-7) var(--step-5); text-align: center; display: grid; gap: var(--step-3); justify-items: center; }
 .empty p { color: var(--muted); }
 .button { min-height: 36px; padding: 0 var(--step-4); border: 1px solid var(--border); border-radius: var(--radius-control); background: var(--surface); color: var(--ink); }
