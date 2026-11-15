@@ -218,6 +218,7 @@ export interface RadarRow {
   maturity_multiplier: number;
   category_multiplier: number;
   chain_multiplier: number;
+  farm_steps: string[];
 }
 
 /** A live-token protocol: it already trades, so the board shows the market's own value, not a model's. */
@@ -293,6 +294,23 @@ it. "Records no token" means the record carries no token, not that the protocol 
 An implied value is an estimate of what a token could be worth, never a price, and a TVL
 that can rise in a week can fall in one too.`,
   },
+  {
+    title: 'The opportunity score is a second reading, not a second ranking',
+    body: `Each row also carries a score from 0 to 100, built in the page from the same figures: a
+third of it is the row's TVL rank on the board, a fifth each is its seven-day growth and its
+maturity, and the rest is its category and its chain breadth. The score is a way to compare
+rows at a glance when the implied values are far apart; it never changes a rank and never
+changes an implied value, and a high score is still an estimate, not a recommendation.`,
+  },
+  {
+    title: 'Risk signals are structural, not an audit',
+    body: `Each row carries a risk signal built from four things the snapshot does show: how young
+the protocol is, whether it runs on a single chain, whether its last seven days moved
+sharply, and whether its category is bridge or chain-adjacent. The snapshot holds no audit,
+no liquidity figure and no contract data, so the signal is structural only: it is not a
+smart-contract audit, it cannot detect a scam or a contract bug, and a Low signal is not a
+promise that a protocol is safe.`,
+  },
 ];
 
 export interface RadarData {
@@ -302,6 +320,7 @@ export interface RadarData {
   model: ModelConstants;
   model_version: string;
   guide: GuideEntry[];
+  protocols_total: number;
   watchlist_size: number;
   board_size: number;
   early_size: number;
@@ -620,6 +639,7 @@ export function radarRow(row: BoardRow): RadarRow {
     maturity_multiplier: row.model.maturity_multiplier,
     category_multiplier: row.model.category_multiplier,
     chain_multiplier: row.model.chain_multiplier,
+    farm_steps: row.farm_steps,
   };
 }
 
@@ -635,6 +655,7 @@ export function buildRadar(snapshot: Snapshot, model: ModelConstants = MODEL): {
     model,
     model_version: MODEL_VERSION,
     guide: MODEL_GUIDE,
+    protocols_total: snapshot.protocols.length,
     watchlist_size: snapshot.watchlist.length,
     board_size: board.length,
     early_size: early,
